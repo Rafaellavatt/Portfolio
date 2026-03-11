@@ -7,13 +7,10 @@
   <meta name="description" content="Free browser-based tools by Snowchaser Tech. PDF Split & Merge — 100% client-side, files never leave your browser.">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #080e1a; color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
 
     /* ── HEADER ── */
     header {
-      position: relative;
-      z-index: 10;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -61,7 +58,6 @@
       font-weight: 700;
       color: #fff;
       margin-bottom: 10px;
-      letter-spacing: -0.3px;
     }
     .page-hero p {
       font-size: 0.85rem;
@@ -71,7 +67,7 @@
       line-height: 1.6;
     }
 
-    /* ── TOOL CARDS ── */
+    /* ── TOOL WRAPPER ── */
     .tools-grid {
       flex: 1;
       padding: 56px 48px;
@@ -79,8 +75,6 @@
       width: 100%;
       margin: 0 auto;
     }
-
-    /* Tool card */
     .tool-card {
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.07);
@@ -129,16 +123,80 @@
       border-radius: 20px;
       flex-shrink: 0;
     }
+
+    /* ── INLINED PDF TOOL STYLES ── */
     .tool-body {
-      padding: 0;
-    }
-    .tool-body iframe {
-      width: 100%;
-      height: 780px;
-      border: none;
-      display: block;
       background: #f0f2f5;
+      padding: 24px;
     }
+    .tool-body h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    #drop-zone {
+      border: 2.5px dashed #aab4c8;
+      border-radius: 12px;
+      background: #fff;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 16px;
+    }
+    #drop-zone.dragover { border-color: #4361ee; background: #eef0ff; }
+    #drop-zone p { color: #6b7280; margin-bottom: 12px; font-size: 0.95rem; }
+    #drop-zone button {
+      background: #4361ee; color: #fff; border: none;
+      padding: 9px 22px; border-radius: 8px; font-size: 0.9rem;
+      cursor: pointer; font-weight: 600; transition: background 0.2s;
+    }
+    #drop-zone button:hover { background: #3451d1; }
+    #file-input { display: none; }
+    #file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .file-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #d1d5db; border-radius: 20px;
+      padding: 4px 12px 4px 8px; font-size: 0.85rem; color: #374151;
+      transition: box-shadow 0.15s, opacity 0.15s;
+    }
+    .file-chip.dragging { opacity: 0.4; }
+    .file-chip.drag-over { box-shadow: -3px 0 0 #4361ee; border-color: #4361ee; }
+    .drag-handle { cursor: grab; color: #c4c9d4; font-size: 1rem; line-height: 1; padding: 0 2px; flex-shrink: 0; }
+    .drag-handle:active { cursor: grabbing; }
+    .file-chip .remove-file {
+      background: none; border: none; cursor: pointer; color: #9ca3af;
+      font-size: 1rem; line-height: 1; padding: 0 2px; transition: color 0.15s;
+    }
+    .file-chip .remove-file:hover { color: #ef4444; }
+    #toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    #merge-btn {
+      background: #16a34a; color: #fff; border: none;
+      padding: 10px 28px; border-radius: 8px; font-size: 0.95rem;
+      font-weight: 700; cursor: pointer; transition: background 0.2s;
+    }
+    #merge-btn:hover:not(:disabled) { background: #15803d; }
+    #merge-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    #status { font-size: 0.88rem; color: #6b7280; }
+    #page-count { font-size: 0.88rem; color: #6b7280; margin-left: auto; }
+    #pages-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+    .page-card {
+      background: #fff; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10); cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.1s; position: relative; user-select: none;
+    }
+    .page-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.14); transform: translateY(-2px); }
+    .page-card.excluded { opacity: 0.55; }
+    .thumb-wrap { position: relative; width: 100%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; }
+    .thumb-wrap canvas { display: block; width: 100%; height: auto; }
+    .exclude-overlay { display: none; position: absolute; inset: 0; background: rgba(220,38,38,0.45); align-items: center; justify-content: center; }
+    .page-card.excluded .exclude-overlay { display: flex; }
+    .exclude-overlay span { font-size: 3rem; color: #fff; font-weight: 900; line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+    .page-label { padding: 6px 8px; font-size: 0.75rem; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid #f3f4f6; }
+    .page-label strong { display: block; color: #374151; font-size: 0.8rem; }
+    .thumb-loading { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.8rem; }
+    #empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 0.95rem; }
 
     /* ── FOOTER ── */
     footer {
@@ -150,10 +208,7 @@
       letter-spacing: 1px;
       border-top: 1px solid rgba(255,255,255,0.04);
     }
-    footer a {
-      color: rgba(255,255,255,0.3);
-      text-decoration: none;
-    }
+    footer a { color: rgba(255,255,255,0.3); text-decoration: none; }
     footer a:hover { color: rgba(255,255,255,0.6); }
 
     /* ── RESPONSIVE ── */
@@ -163,6 +218,7 @@
       .page-hero { padding: 40px 24px 36px; }
       .tools-grid { padding: 36px 24px; }
       .tool-card-header { padding: 18px 20px; }
+      .tool-body { padding: 16px; }
     }
   </style>
 </head>
@@ -184,7 +240,6 @@
 </div>
 
 <div class="tools-grid">
-
   <div class="tool-card">
     <div class="tool-card-header">
       <div class="tool-icon">📄</div>
@@ -194,16 +249,214 @@
       </div>
       <div class="tool-badge">Client-side</div>
     </div>
+
+    <!-- PDF tool inlined directly — no iframe needed -->
     <div class="tool-body">
-      <iframe src="pdf converter/index.html" title="PDF Split & Merge Tool"></iframe>
+      <h1>PDF Split &amp; Merge</h1>
+      <div id="drop-zone">
+        <p>Drag &amp; drop PDF files here</p>
+        <button onclick="document.getElementById('file-input').click()">Add PDFs</button>
+        <input type="file" id="file-input" accept="application/pdf" multiple>
+      </div>
+      <div id="file-list"></div>
+      <div id="toolbar">
+        <button id="merge-btn" disabled>Merge &amp; Download</button>
+        <span id="status"></span>
+        <span id="page-count"></span>
+      </div>
+      <div id="pages-container">
+        <div id="empty-state">Upload PDFs to see page thumbnails</div>
+      </div>
     </div>
   </div>
-
 </div>
 
 <footer>
   <a href="index.html">&larr; Back to Snowchaser Tech</a> &nbsp;·&nbsp; Stockholm, Sweden
 </footer>
 
+<script src="https://unpkg.com/pdf-lib@1.16.0/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  const files = [];
+  const dropZone       = document.getElementById('drop-zone');
+  const fileInput      = document.getElementById('file-input');
+  const fileListEl     = document.getElementById('file-list');
+  const pagesContainer = document.getElementById('pages-container');
+  const mergeBtn       = document.getElementById('merge-btn');
+  const statusEl       = document.getElementById('status');
+  const pageCountEl    = document.getElementById('page-count');
+  const emptyState     = document.getElementById('empty-state');
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles([...e.dataTransfer.files]); });
+  fileInput.addEventListener('change', () => { handleFiles([...fileInput.files]); fileInput.value = ''; });
+
+  async function handleFiles(newFiles) {
+    const pdfs = newFiles.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (!pdfs.length) return;
+    setStatus('Loading…');
+    for (const file of pdfs) await loadFile(file);
+    setStatus('');
+    updateUI();
+  }
+
+  async function loadFile(file) {
+    const bytes = await readFileBytes(file);
+    const fileIndex = files.length;
+    try {
+      const pdfJsDoc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+      files.push({ fileName: file.name, pdfBytes: bytes, pageCount: pdfJsDoc.numPages, excluded: new Set(), pdfJsDoc });
+      renderFileThumbnails(fileIndex, pdfJsDoc);
+    } catch (err) { alert(`Could not read "${file.name}":\n${err.message}`); }
+  }
+
+  function readFileBytes(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(new Uint8Array(e.target.result));
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  async function renderFileThumbnails(fileIndex, pdfJsDoc) {
+    const entry = files[fileIndex];
+    for (let pageIndex = 0; pageIndex < entry.pageCount; pageIndex++) {
+      const card = createPageCard(fileIndex, pageIndex, entry.fileName);
+      pagesContainer.appendChild(card);
+      renderPageCanvas(pdfJsDoc, pageIndex, card);
+    }
+  }
+
+  function createPageCard(fileIndex, pageIndex, fileName) {
+    const card = document.createElement('div');
+    card.className = 'page-card';
+    card.dataset.fileIndex = fileIndex;
+    card.dataset.pageIndex = pageIndex;
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'thumb-wrap';
+    const loading = document.createElement('div');
+    loading.className = 'thumb-loading';
+    loading.textContent = 'Rendering…';
+    thumbWrap.appendChild(loading);
+    const overlay = document.createElement('div');
+    overlay.className = 'exclude-overlay';
+    overlay.innerHTML = '<span>✕</span>';
+    thumbWrap.appendChild(overlay);
+    const label = document.createElement('div');
+    label.className = 'page-label';
+    label.innerHTML = `<strong>p.${pageIndex + 1}</strong>${escapeHtml(fileName)}`;
+    card.appendChild(thumbWrap);
+    card.appendChild(label);
+    card.addEventListener('click', () => toggleExclude(card, fileIndex, pageIndex));
+    return card;
+  }
+
+  async function renderPageCanvas(pdfJsDoc, pageIndex, card) {
+    try {
+      const page = await pdfJsDoc.getPage(pageIndex + 1);
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = 150 / viewport.width;
+      const scaled = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = scaled.width;
+      canvas.height = scaled.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: scaled }).promise;
+      const thumbWrap = card.querySelector('.thumb-wrap');
+      const loading = thumbWrap.querySelector('.thumb-loading');
+      thumbWrap.insertBefore(canvas, loading);
+      loading.remove();
+    } catch (err) {
+      const loading = card.querySelector('.thumb-loading');
+      if (loading) loading.textContent = 'Error';
+    }
+  }
+
+  function toggleExclude(card, fileIndex, pageIndex) {
+    const entry = files[fileIndex];
+    if (entry.excluded.has(pageIndex)) { entry.excluded.delete(pageIndex); card.classList.remove('excluded'); }
+    else { entry.excluded.add(pageIndex); card.classList.add('excluded'); }
+    updatePageCount();
+  }
+
+  function removeFile(fileIndex) { files.splice(fileIndex, 1); rebuildUI(); }
+
+  function rebuildUI() {
+    pagesContainer.innerHTML = '';
+    if (files.length === 0) pagesContainer.appendChild(emptyState);
+    files.forEach((entry, fi) => renderFileThumbnails(fi, entry.pdfJsDoc));
+    renderFileList();
+    updatePageCount();
+    mergeBtn.disabled = files.length === 0;
+  }
+
+  function updateUI() {
+    emptyState.remove();
+    renderFileList();
+    updatePageCount();
+    mergeBtn.disabled = files.length === 0;
+  }
+
+  let dragSrcIndex = null;
+  function renderFileList() {
+    fileListEl.innerHTML = '';
+    files.forEach((entry, fi) => {
+      const chip = document.createElement('div');
+      chip.className = 'file-chip';
+      chip.draggable = true;
+      chip.dataset.index = fi;
+      chip.innerHTML = `<span class="drag-handle" title="Drag to reorder">⠿</span><span>${escapeHtml(entry.fileName)}</span><button class="remove-file" title="Remove file">✕</button>`;
+      chip.querySelector('.remove-file').addEventListener('click', () => removeFile(fi));
+      chip.addEventListener('dragstart', e => { dragSrcIndex = fi; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); });
+      chip.addEventListener('dragend', () => { chip.classList.remove('dragging'); fileListEl.querySelectorAll('.file-chip').forEach(c => c.classList.remove('drag-over')); });
+      chip.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'move'; fileListEl.querySelectorAll('.file-chip').forEach(c => c.classList.remove('drag-over')); if (fi !== dragSrcIndex) chip.classList.add('drag-over'); });
+      chip.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); chip.classList.remove('drag-over'); if (dragSrcIndex === null || dragSrcIndex === fi) return; const [moved] = files.splice(dragSrcIndex, 1); files.splice(fi, 0, moved); dragSrcIndex = null; rebuildUI(); });
+      fileListEl.appendChild(chip);
+    });
+  }
+
+  function updatePageCount() {
+    let total = 0, excluded = 0;
+    files.forEach(e => { total += e.pageCount; excluded += e.excluded.size; });
+    pageCountEl.textContent = total === 0 ? '' : `${total - excluded} of ${total} pages included`;
+  }
+
+  function setStatus(msg) { statusEl.textContent = msg; }
+
+  mergeBtn.addEventListener('click', async () => {
+    const included = files.filter(e => e.pageCount - e.excluded.size > 0);
+    if (!included.length) { alert('All pages are excluded — nothing to merge.'); return; }
+    mergeBtn.disabled = true;
+    setStatus('Merging…');
+    try {
+      const { PDFDocument } = PDFLib;
+      const destDoc = await PDFDocument.create();
+      for (const entry of files) {
+        const srcDoc = await PDFDocument.load(entry.pdfBytes);
+        const pageIndices = [];
+        for (let i = 0; i < entry.pageCount; i++) { if (!entry.excluded.has(i)) pageIndices.push(i); }
+        if (pageIndices.length === 0) continue;
+        const copiedPages = await destDoc.copyPages(srcDoc, pageIndices);
+        copiedPages.forEach(p => destDoc.addPage(p));
+      }
+      const pdfBytes = await destDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'merged.pdf';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+      setStatus(`Done — ${destDoc.getPageCount()} pages saved.`);
+    } catch (err) { alert('Merge failed:\n' + err.message); setStatus(''); }
+    finally { mergeBtn.disabled = files.length === 0; }
+  });
+
+  function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
 </body>
 </html>
